@@ -358,11 +358,17 @@ class CheckDownloadInfoThread(QThread):
 
                     # get information
                     returned_dict = download_session_dict['download_session'].tellStatus()
-
-                    if download_session_dict['download_session'].write_it_to_the_database is False:
-                        download_session_dict['download_session'].write_it_to_the_database = True
-                        write_it += 1
-
+                    
+                    # Force 100% only if needed
+                    if (
+                        returned_dict.get('status') == 'complete'
+                        and returned_dict.get('totalLength') == returned_dict.get('completedLength')
+                        and returned_dict.get("percent") != '100%'
+                    ):
+                        returned_dict['percent'] = '100%'
+                       
+                        print(f"[DEBUG] Forcing 100% for {returned_dict.get('gid')}")
+                    
                     # add gid to download_session_dict
                     download_status_list.append(returned_dict)
 
